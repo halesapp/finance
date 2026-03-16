@@ -6,7 +6,7 @@ import { getRange } from '../lib/dateUtils.js'
 
 export function CsvExportPage() {
   const [accounts, setAccounts] = useState([])
-  const [accountId, setAccountId] = useState('')
+  const [accountId, setAccountId] = useState('all')
   const [range, setRange] = useState(getRange('ytd'))
   const [exporting, setExporting] = useState(false)
   const [error, setError] = useState(null)
@@ -14,18 +14,18 @@ export function CsvExportPage() {
   useEffect(() => {
     supabase.from('accounts').select('id, name, initial_balance').order('name').then(({ data }) => {
       setAccounts(data || [])
-      if (data?.length) setAccountId(data[0].id)
     })
   }, [])
 
   async function handleExport() {
-    if (!accountId) return
     setExporting(true)
     setError(null)
     try {
+      const selectedAccountId = accountId === 'all' ? null : accountId
       const acct = accounts.find(a => a.id === accountId)
-      const csv = await exportTransactions(accountId, range.from, range.to, Number(acct.initial_balance))
-      downloadCsv(csv, `transactions-${acct.name.replace(/\s+/g, '-')}-${range.from}-to-${range.to}.csv`)
+      const accountSlug = acct ? acct.name.replace(/\s+/g, '-') : 'all-accounts'
+      const csv = await exportTransactions(selectedAccountId, range.from, range.to)
+      downloadCsv(csv, `transactions-${accountSlug}-${range.from}-to-${range.to}.csv`)
     } catch (e) {
       setError(e.message)
     }
@@ -42,11 +42,12 @@ export function CsvExportPage() {
           <label class="text-sm text-gray-500 dark:text-gray-400">Account</label>
           <select value={accountId} onChange={e => setAccountId(e.target.value)}
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="all">All accounts</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
         <DateRangeFilter from={range.from} to={range.to} onChange={setRange} />
-        <button onClick={handleExport} disabled={exporting || !accountId}
+        <button onClick={handleExport} disabled={exporting}
           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50">
           {exporting ? 'Exporting...' : 'Download CSV'}
         </button>

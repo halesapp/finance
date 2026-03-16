@@ -3,9 +3,15 @@ import { useSupabase } from '../hooks/useSupabase.js'
 import { AccountForm } from './AccountForm.jsx'
 
 export function AccountList() {
-  const { data: accounts, loading, insert, update, remove, refetch } = useSupabase('accounts', {
+  const { data: rawAccounts, loading, insert, update } = useSupabase('accounts', {
     select: '*, bank:banks(name)',
     orderBy: 'name',
+  })
+  const typeOrder = { checking: 0, savings: 1, credit: 2, investment: 3, cash: 4 }
+  const accounts = [...rawAccounts].sort((a, b) => {
+    const bankCmp = (a.bank?.name || '').localeCompare(b.bank?.name || '')
+    if (bankCmp !== 0) return bankCmp
+    return (typeOrder[a.account_type] ?? 9) - (typeOrder[b.account_type] ?? 9)
   })
   const [editing, setEditing] = useState(null)
   const [showClosed, setShowClosed] = useState(false)
@@ -87,7 +93,13 @@ export function AccountList() {
                   </td>
                   <td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.initial_balance_date}</td>
                   <td class="px-3 py-1.5 text-right whitespace-nowrap">
-                    <button onClick={() => setEditing(a)} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit"><svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/><path d="M19.5 7.125L16.862 4.487"/></svg></button>
+                    <button onClick={() => setEditing(a)}
+                      class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit">
+                      <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
+                        <path d="M19.5 7.125L16.862 4.487"/>
+                      </svg>
+                    </button>
                     <button onClick={() => handleToggleClosed(a)}
                       class={`hover:underline mr-2 ${a.is_closed ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                       {a.is_closed ? 'reopen' : 'close'}

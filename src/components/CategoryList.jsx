@@ -1,15 +1,12 @@
 import { useState } from 'preact/hooks'
-import { supabase } from '../lib/supabase.js'
 import { useSupabase } from '../hooks/useSupabase.js'
 import { CategoryForm } from './CategoryForm.jsx'
 import { ConfirmModal } from './ConfirmModal.jsx'
 
 export function CategoryList() {
-  const { data: categories, loading, insert, update, remove, refetch } = useSupabase('categories', { orderBy: 'name' })
+  const { data: categories, loading, insert, update, remove } = useSupabase('categories', { orderBy: 'name' })
   const [editingId, setEditingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
-  const [selected, setSelected] = useState(new Set())
-  const [bulkDeleting, setBulkDeleting] = useState(false)
 
   const editingCategory = editingId === 'new' ? null : categories.find(c => c.id === editingId) || null
 
@@ -25,30 +22,6 @@ export function CategoryList() {
   async function handleDelete() {
     await remove(deletingId)
     setDeletingId(null)
-  }
-
-  async function handleBulkDelete() {
-    await supabase.from('categories').delete().in('id', [...selected])
-    setSelected(new Set())
-    setBulkDeleting(false)
-    refetch()
-  }
-
-  function toggleSelect(id) {
-    setSelected(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  function toggleAll() {
-    if (selected.size === rows.length) {
-      setSelected(new Set())
-    } else {
-      setSelected(new Set(rows.map(r => r.id)))
-    }
   }
 
   if (loading) return <p class="text-gray-500 dark:text-gray-400 py-8">Loading...</p>
@@ -76,17 +49,9 @@ export function CategoryList() {
     <div class="space-y-3">
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Categories</h1>
-        <div class="flex gap-2">
-          {selected.size > 0 && (
-            <button onClick={() => setBulkDeleting(true)}
-              class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg">
-              Delete {selected.size} selected
-            </button>
-          )}
-          <button onClick={() => setEditingId('new')} class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
-            Add Category
-          </button>
-        </div>
+        <button onClick={() => setEditingId('new')} class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg">
+          Add Category
+        </button>
       </div>
 
       {editingId !== null && (
@@ -105,10 +70,6 @@ export function CategoryList() {
           <table class="w-full text-xs">
             <thead>
               <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <th class="px-3 py-2 w-8">
-                  <input type="checkbox" checked={selected.size === rows.length && rows.length > 0}
-                    onChange={toggleAll} class="rounded" />
-                </th>
                 <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Name</th>
                 <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-20"></th>
               </tr>
@@ -116,10 +77,6 @@ export function CategoryList() {
             <tbody>
               {rows.map(c => (
                 <tr key={c.id} class={`border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${c.depth === 0 ? 'bg-gray-50/50 dark:bg-gray-800/50' : ''}`}>
-                  <td class="px-3 py-1.5">
-                    <input type="checkbox" checked={selected.has(c.id)}
-                      onChange={() => toggleSelect(c.id)} class="rounded" />
-                  </td>
                   <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100 whitespace-nowrap"
                     style={{ paddingLeft: `${c.depth * 20 + 12}px` }}>
                     {c.depth > 0 && <span class="text-gray-300 dark:text-gray-600 mr-1">└</span>}
@@ -141,14 +98,6 @@ export function CategoryList() {
           message="Delete this category? Existing transactions will become uncategorized."
           onConfirm={handleDelete}
           onCancel={() => setDeletingId(null)}
-        />
-      )}
-
-      {bulkDeleting && (
-        <ConfirmModal
-          message={`Delete ${selected.size} categories? Existing transactions will become uncategorized.`}
-          onConfirm={handleBulkDelete}
-          onCancel={() => setBulkDeleting(false)}
         />
       )}
     </div>
