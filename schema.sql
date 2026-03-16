@@ -78,7 +78,19 @@ CREATE TABLE transfers (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Account Year Balances (start-of-year balance snapshots)
+CREATE TABLE account_year_balances
+(
+    id         UUID PRIMARY KEY        DEFAULT gen_random_uuid(),
+    account_id UUID           NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+    year       INTEGER        NOT NULL,
+    balance    NUMERIC(12, 2) NOT NULL,
+    created_at TIMESTAMPTZ    NOT NULL DEFAULT now(),
+    UNIQUE (account_id, year)
+);
+
 -- Indexes
+CREATE INDEX idx_account_year_balances_account ON account_year_balances (account_id);
 CREATE INDEX idx_accounts_bank_id ON accounts(bank_id);
 CREATE INDEX idx_payees_name ON payees(name);
 CREATE INDEX idx_transactions_account_id ON transactions(account_id);
@@ -125,6 +137,7 @@ ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payees ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transfers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE account_year_balances ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: users can read all, update own
 CREATE POLICY "profiles_select" ON profiles FOR SELECT TO authenticated USING (true);
@@ -165,3 +178,16 @@ CREATE POLICY "transfers_select" ON transfers FOR SELECT TO authenticated USING 
 CREATE POLICY "transfers_insert" ON transfers FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "transfers_update" ON transfers FOR UPDATE TO authenticated USING (true);
 CREATE POLICY "transfers_delete" ON transfers FOR DELETE TO authenticated USING (true);
+
+-- Account Year Balances: all authenticated users have full access
+CREATE
+POLICY "account_year_balances_select" ON account_year_balances FOR
+SELECT TO authenticated USING (true);
+CREATE
+POLICY "account_year_balances_insert" ON account_year_balances FOR INSERT TO authenticated WITH CHECK (true);
+CREATE
+POLICY "account_year_balances_update" ON account_year_balances FOR
+UPDATE TO authenticated USING (true);
+CREATE
+POLICY "account_year_balances_delete" ON account_year_balances FOR DELETE
+TO authenticated USING (true);

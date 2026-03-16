@@ -10,6 +10,7 @@ import {PayeeList} from './components/PayeeList.jsx'
 import {TransferList} from './components/TransferList.jsx'
 import {CsvExportPage} from './components/CsvExportPage.jsx'
 import {CsvImportPage} from './components/CsvImportPage.jsx'
+import {ReportsPage} from './components/ReportsPage.jsx'
 
 function Page() {
   switch (currentPage.value) {
@@ -23,6 +24,8 @@ function Page() {
       return <CategoryList/>
     case 'payees':
       return <PayeeList/>
+    case 'reports':
+      return <ReportsPage/>
     case 'transactions':
       return <TransactionList/>
     case 'transfers':

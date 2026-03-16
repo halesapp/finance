@@ -24,7 +24,7 @@ export function TransactionForm({transaction, onSave, onCancel}) {
       setAccounts(open)
       if (!accountId && open.length) setAccountId(open[0].id)
     })
-    supabase.from('categories').select('id, name').order('name').then(({data}) => {
+    supabase.from('categories').select('id, name, parent_category_id').order('name').then(({data}) => {
       setCategories(data || [])
     })
     supabase.from('payees').select('id, name').order('name').then(({data}) => {
@@ -108,7 +108,25 @@ export function TransactionForm({transaction, onSave, onCancel}) {
         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Category</label>
         <select value={categoryId} onChange={e => setCategoryId(e.target.value)} class={inputClass}>
           <option value="">No category</option>
-          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {(() => {
+            const byId = Object.fromEntries(categories.map(c => [c.id, {...c, children: []}]))
+            const roots = []
+            for (const c of Object.values(byId)) {
+              if (c.parent_category_id && byId[c.parent_category_id]) {
+                byId[c.parent_category_id].children.push(c)
+              } else {
+                roots.push(c)
+              }
+            }
+            const opts = []
+            for (const r of roots) {
+              opts.push(<option key={r.id} value={r.id}>{r.name}</option>)
+              for (const child of r.children) {
+                opts.push(<option key={child.id} value={child.id}>{'\u00A0\u00A0\u00A0\u00A0' + child.name}</option>)
+              }
+            }
+            return opts
+          })()}
         </select>
       </div>
 
