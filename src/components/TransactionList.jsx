@@ -73,7 +73,13 @@ export function TransactionList() {
       {loading ? (
         <p class="text-gray-500 dark:text-gray-400 py-8">Loading...</p>
       ) : txns.length === 0 ? (
-        <p class="text-gray-500 dark:text-gray-400 text-sm">No transactions found.</p>
+        <div class="text-center py-12">
+          <p class="text-gray-500 dark:text-gray-400 text-sm">No transactions yet.</p>
+          <button onClick={() => setEditing('new')}
+            class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            Add your first transaction
+          </button>
+        </div>
       ) : (
         <>
           <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">

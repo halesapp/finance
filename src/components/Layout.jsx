@@ -1,4 +1,5 @@
 import { NavBar } from './NavBar.jsx'
+import { Toast } from './Toast.jsx'
 
 export function Layout({ children }) {
   return (
@@ -9,6 +10,7 @@ export function Layout({ children }) {
           {children}
         </div>
       </main>
+      <Toast />
     </div>
   )
 }

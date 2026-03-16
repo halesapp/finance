@@ -4,8 +4,10 @@ import { supabase } from '../lib/supabase.js'
 const inputClass = 'w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm'
 
 export function TransactionForm({ transaction, onSave, onCancel }) {
+  const existingAmt = transaction ? Number(transaction.amount) : null
   const [accountId, setAccountId] = useState(transaction?.account_id || '')
-  const [amount, setAmount] = useState(transaction?.amount ?? '')
+  const [amount, setAmount] = useState(existingAmt != null ? Math.abs(existingAmt).toString() : '')
+  const [isExpense, setIsExpense] = useState(existingAmt != null ? existingAmt < 0 : true)
   const [date, setDate] = useState(transaction?.date || new Date().toISOString().slice(0, 10))
   const [description, setDescription] = useState(transaction?.description || '')
   const [categoryId, setCategoryId] = useState(transaction?.category_id || '')
@@ -28,12 +30,14 @@ export function TransactionForm({ transaction, onSave, onCancel }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!accountId) return setError('Select an account')
-    if (!amount || Number(amount) === 0) return setError('Amount cannot be zero')
+    const num = Number(amount)
+    if (!amount || num === 0) return setError('Amount cannot be zero')
+    if (num < 0) return setError('Enter a positive number and use the Expense/Income toggle')
     setSaving(true)
     try {
       await onSave({
         account_id: accountId,
-        amount: Number(amount),
+        amount: isExpense ? -num : num,
         date,
         description: description.trim(),
         category_id: categoryId || null,
@@ -44,13 +48,31 @@ export function TransactionForm({ transaction, onSave, onCancel }) {
     }
   }
 
+  const toggleBtn = (label, active) => (
+    <button type="button" onClick={() => setIsExpense(label === 'Expense')}
+      class={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
+        active
+          ? label === 'Expense'
+            ? 'bg-red-600 text-white'
+            : 'bg-green-600 text-white'
+          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+      }`}>
+      {label}
+    </button>
+  )
+
   return (
     <form onSubmit={handleSubmit} class="space-y-4">
       {error && <p class="text-red-600 text-sm">{error}</p>}
 
+      <div class="flex gap-2">
+        {toggleBtn('Expense', isExpense)}
+        {toggleBtn('Income', !isExpense)}
+      </div>
+
       <div>
         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Amount</label>
-        <input type="number" step="0.01" placeholder="-50.00 for expense, 100.00 for income" value={amount}
+        <input type="number" step="0.01" min="0" placeholder="0.00" value={amount}
           onInput={e => setAmount(e.target.value)} class={inputClass} />
       </div>
 

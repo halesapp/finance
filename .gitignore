@@ -24,3 +24,10 @@ dist-ssr
 *.sw?
 .env
 .env.local
+
+# Private data
+seed.sql
+migrations/
+*.xlsx
+*.xls
+*.csv

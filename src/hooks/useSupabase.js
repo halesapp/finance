@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'preact/hooks'
 import { supabase } from '../lib/supabase.js'
+import { showToast } from '../lib/toast.js'
 
 export function useSupabase(table, { orderBy = 'created_at', ascending = true, select = '*', filters = [] } = {}) {
   const [data, setData] = useState([])
@@ -14,6 +15,7 @@ export function useSupabase(table, { orderBy = 'created_at', ascending = true, s
     }
     query = query.order(orderBy, { ascending })
     const { data: d, error: e } = await query
+    if (e) showToast(`Failed to load ${table}`)
     setData(d || [])
     setError(e)
     setLoading(false)
@@ -23,20 +25,20 @@ export function useSupabase(table, { orderBy = 'created_at', ascending = true, s
 
   async function insert(row) {
     const { data: d, error: e } = await supabase.from(table).insert(row).select()
-    if (e) throw e
+    if (e) { showToast('Failed to save'); throw e }
     await fetch()
     return d
   }
 
   async function update(id, row) {
     const { error: e } = await supabase.from(table).update(row).eq('id', id)
-    if (e) throw e
+    if (e) { showToast('Failed to save'); throw e }
     await fetch()
   }
 
   async function remove(id) {
     const { error: e } = await supabase.from(table).delete().eq('id', id)
-    if (e) throw e
+    if (e) { showToast('Failed to delete'); throw e }
     await fetch()
   }
 

@@ -53,7 +53,13 @@ export function Dashboard() {
         }
         totalInitial += initial
         totalCurrent += bal
-        return { name: acct.name, initial, current: bal, net: bal - initial }
+        return { name: acct.name, bankName: acct.bank?.name || '', accountType: acct.account_type, initial, current: bal, net: bal - initial }
+      })
+      const typeOrder = { checking: 0, savings: 1, credit: 2, investment: 3, cash: 4 }
+      acctRows.sort((a, b) => {
+        const bankCmp = a.bankName.localeCompare(b.bankName)
+        if (bankCmp !== 0) return bankCmp
+        return (typeOrder[a.accountType] ?? 9) - (typeOrder[b.accountType] ?? 9)
       })
       setAccountRows(acctRows)
       setNetWorth({ initial: totalInitial, current: totalCurrent, net: totalCurrent - totalInitial })

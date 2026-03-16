@@ -8,7 +8,6 @@ import { AccountList } from './components/AccountList.jsx'
 import { CategoryList } from './components/CategoryList.jsx'
 import { TransactionList } from './components/TransactionList.jsx'
 import { TransferList } from './components/TransferList.jsx'
-import { BalancesPage } from './components/BalancesPage.jsx'
 import { CsvExportPage } from './components/CsvExportPage.jsx'
 import { CsvImportPage } from './components/CsvImportPage.jsx'
 
@@ -20,7 +19,6 @@ function Page() {
     case 'categories': return <CategoryList />
     case 'transactions': return <TransactionList />
     case 'transfers': return <TransferList />
-    case 'balances': return <BalancesPage />
     case 'csv-export': return <CsvExportPage />
     case 'csv-import': return <CsvImportPage />
     case '_more': return <MobileMoreMenu />
