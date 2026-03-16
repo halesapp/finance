@@ -48,10 +48,18 @@ CREATE TABLE categories (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Payees
+CREATE TABLE payees (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Transactions
 CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  payee_id UUID NOT NULL REFERENCES payees(id) ON DELETE SET NULL,
   amount NUMERIC(12,2) NOT NULL,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   description TEXT,
@@ -72,7 +80,9 @@ CREATE TABLE transfers (
 
 -- Indexes
 CREATE INDEX idx_accounts_bank_id ON accounts(bank_id);
+CREATE INDEX idx_payees_name ON payees(name);
 CREATE INDEX idx_transactions_account_id ON transactions(account_id);
+CREATE INDEX idx_transactions_payee_id ON transactions(payee_id);
 CREATE INDEX idx_transactions_category_id ON transactions(category_id);
 CREATE INDEX idx_transactions_date ON transactions(date);
 CREATE INDEX idx_categories_parent_id ON categories(parent_category_id);
@@ -112,6 +122,7 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE banks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payees ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transfers ENABLE ROW LEVEL SECURITY;
 
@@ -136,6 +147,12 @@ CREATE POLICY "categories_select" ON categories FOR SELECT TO authenticated USIN
 CREATE POLICY "categories_insert" ON categories FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "categories_update" ON categories FOR UPDATE TO authenticated USING (true);
 CREATE POLICY "categories_delete" ON categories FOR DELETE TO authenticated USING (true);
+
+-- Payees: all authenticated users have full access
+CREATE POLICY "payees_select" ON payees FOR SELECT TO authenticated USING (true);
+CREATE POLICY "payees_insert" ON payees FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "payees_update" ON payees FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "payees_delete" ON payees FOR DELETE TO authenticated USING (true);
 
 -- Transactions: all authenticated users have full access
 CREATE POLICY "transactions_select" ON transactions FOR SELECT TO authenticated USING (true);

@@ -18,7 +18,7 @@ export function TransactionList() {
     setLoading(true)
     const { data } = await supabase
       .from('transactions')
-      .select('*, account:accounts(name), category:categories(name)')
+      .select('*, account:accounts(name), category:categories(name), payee:payees(name)')
       .order('date', { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
     setTxns(data || [])
@@ -87,6 +87,7 @@ export function TransactionList() {
               <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                   <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Date</th>
+                  <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Payee</th>
                   <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Description</th>
                   <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Account</th>
                   <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Category</th>
@@ -98,6 +99,7 @@ export function TransactionList() {
                 {txns.map(t => (
                   <tr key={t.id} class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 last:border-0">
                     <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.date}</td>
+                    <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.payee?.name || '—'}</td>
                     <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100 max-w-xs truncate">{t.description || '—'}</td>
                     <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.account?.name}</td>
                     <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.category?.name || '—'}</td>

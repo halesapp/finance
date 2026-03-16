@@ -47,7 +47,7 @@ export function detectFormat(headers) {
   return null
 }
 
-export function mapToTransactions(rows, format, accountId) {
+export function mapToTransactions(rows, format, accountId, payeeId) {
   return rows
     .map(row => {
       const amount = parseFloat(row[format.amountCol])
@@ -55,6 +55,7 @@ export function mapToTransactions(rows, format, accountId) {
 
       return {
         account_id: accountId,
+        payee_id: payeeId,
         date: row[format.dateCol],
         amount: Math.abs(amount),
         type: amount >= 0 ? 'deposit' : 'withdrawal',

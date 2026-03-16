@@ -3,7 +3,7 @@ import { supabase } from './supabase.js'
 export async function exportTransactions(accountId, from, to) {
   let txnsQuery = supabase
     .from('transactions')
-    .select('date, description, category:categories(name), amount, account:accounts(name)')
+    .select('date, description, category:categories(name), amount, account:accounts(name), payee:payees(name)')
     .gte('date', from)
     .lte('date', to)
     .order('date')
@@ -39,7 +39,7 @@ export async function exportTransactions(accountId, from, to) {
   for (const t of txns || []) {
     rows.push({
       date: t.date,
-      payee: '',
+      payee: t.payee?.name || '',
       description: t.description || '',
       income: Number(t.amount) > 0 ? Number(t.amount) : '',
       expense: Number(t.amount) < 0 ? Math.abs(Number(t.amount)) : '',
