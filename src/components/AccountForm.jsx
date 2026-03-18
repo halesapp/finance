@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'preact/hooks'
-import { supabase } from '../lib/supabase.js'
+import {useEffect, useState} from 'preact/hooks'
+import {supabase} from '../lib/supabase.js'
 
 export function AccountForm({ account, onSave, onCancel }) {
   const [name, setName] = useState(account?.name || '')
@@ -37,7 +37,7 @@ export function AccountForm({ account, onSave, onCancel }) {
     }
   }
 
-  const types = ['checking', 'savings', 'credit', 'investment', 'cash', 'other']
+  const types = ['checking', 'savings', 'credit', 'investment', 'retirement', 'cash']
 
   return (
     <form onSubmit={handleSubmit} class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">

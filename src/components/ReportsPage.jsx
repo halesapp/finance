@@ -24,7 +24,7 @@ export function ReportsPage() {
   useEffect(() => {
     Promise.all([
       supabase.from('transactions').select('*, account:accounts(name), payee:payees(name), category:categories(id, name, parent_category_id)').order('date'),
-      supabase.from('accounts').select('id, name, is_closed').order('name'),
+      supabase.from('accounts').select('id, name, is_closed, account_type').order('name'),
       supabase.from('payees').select('id, name').order('name'),
       supabase.from('categories').select('id, name, parent_category_id').order('name'),
     ]).then(([{data: t}, {data: a}, {data: p}, {data: c}]) => {
@@ -57,11 +57,21 @@ export function ReportsPage() {
     return opts
   }, [categories])
 
-  // Filter transactions
+  // Investment/retirement account IDs to exclude from reports
+  const investmentAccountIds = useMemo(() => {
+    return new Set(accounts.filter(a => a.account_type === 'investment' || a.account_type === 'retirement').map(a => a.id))
+  }, [accounts])
+
+  // Filter transactions (exclude investment/retirement unless specifically selected)
   const filtered = useMemo(() => {
     return txns.filter(t => {
       if (t.date < dateFrom || t.date > dateTo) return false
-      if (accountId && t.account_id !== accountId) return false
+      if (accountId) {
+        if (t.account_id !== accountId) return false
+      } else {
+        // When "All accounts" is selected, exclude investment/retirement
+        if (investmentAccountIds.has(t.account_id)) return false
+      }
       if (payeeId && t.payee_id !== payeeId) return false
       if (categoryId) {
         // Match category or its children
@@ -72,7 +82,7 @@ export function ReportsPage() {
       }
       return true
     })
-  }, [txns, accountId, payeeId, categoryId, dateFrom, dateTo, categories])
+  }, [txns, accountId, payeeId, categoryId, dateFrom, dateTo, categories, investmentAccountIds])
 
   // Monthly aggregation for chart
   const monthlyData = useMemo(() => {

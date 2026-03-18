@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'preact/hooks'
-import { supabase } from '../lib/supabase.js'
-import { DateRangeFilter } from './DateRangeFilter.jsx'
-import { getRange } from '../lib/dateUtils.js'
+import {useEffect, useState} from 'preact/hooks'
+import {supabase} from '../lib/supabase.js'
+import {DateRangeFilter} from './DateRangeFilter.jsx'
+import {getRange} from '../lib/dateUtils.js'
 
 export function BalancesPage() {
   const [range, setRange] = useState(getRange('ytd'))
@@ -21,17 +21,31 @@ export function BalancesPage() {
     const { data: transfers } = await supabase.from('transfers').select('*')
     const { data: categories } = await supabase.from('categories').select('*')
 
+    // Compute balance at range.to, working forward or backward from anchor
+    const cutoff = range.to + 'Z' // make exclusive by comparing < day after
     const balances = (accounts || []).map(acct => {
-      let bal = Number(acct.initial_balance)
+      const anchor = Number(acct.initial_balance)
+      const anchorDate = acct.initial_balance_date
+      let bal = anchor
       for (const t of txns || []) {
         if (t.account_id !== acct.id) continue
-        if (t.date < acct.initial_balance_date || t.date > range.to) continue
-        bal += Number(t.amount)
+        const amt = Number(t.amount)
+        if (range.to >= anchorDate) {
+          if (t.date >= anchorDate && t.date <= range.to) bal += amt
+        } else {
+          if (t.date > range.to && t.date < anchorDate) bal -= amt
+        }
       }
       for (const tr of transfers || []) {
-        if (tr.date < acct.initial_balance_date || tr.date > range.to) continue
-        if (tr.to_account_id === acct.id) bal += Number(tr.amount)
-        if (tr.from_account_id === acct.id) bal -= Number(tr.amount)
+        let amt = 0
+        if (tr.to_account_id === acct.id) amt = Number(tr.amount)
+        else if (tr.from_account_id === acct.id) amt = -Number(tr.amount)
+        else continue
+        if (range.to >= anchorDate) {
+          if (tr.date >= anchorDate && tr.date <= range.to) bal += amt
+        } else {
+          if (tr.date > range.to && tr.date < anchorDate) bal -= amt
+        }
       }
       return { ...acct, balance: bal }
     })
@@ -39,8 +53,11 @@ export function BalancesPage() {
     setAccountBalances(balances)
     setNetWorth(balances.reduce((s, a) => s + a.balance, 0))
 
+    // Exclude investment/retirement accounts from expense categories
+    const investmentAcctIds = new Set((accounts || []).filter(a => a.account_type === 'investment' || a.account_type === 'retirement').map(a => a.id))
     const catMap = {}
     for (const t of txns || []) {
+      if (investmentAcctIds.has(t.account_id)) continue
       if (t.date < range.from || t.date > range.to) continue
       if (Number(t.amount) >= 0) continue
       const cat = (categories || []).find(c => c.id === t.category_id)

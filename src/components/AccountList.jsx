@@ -1,10 +1,10 @@
-import { useState } from 'preact/hooks'
-import { useSupabase } from '../hooks/useSupabase.js'
-import { AccountForm } from './AccountForm.jsx'
-import { BankForm } from './BankForm.jsx'
-import { ConfirmModal } from './ConfirmModal.jsx'
+import {useState} from 'preact/hooks'
+import {useSupabase} from '../hooks/useSupabase.js'
+import {AccountForm} from './AccountForm.jsx'
+import {BankForm} from './BankForm.jsx'
+import {ConfirmModal} from './ConfirmModal.jsx'
 
-const typeOrder = { checking: 0, savings: 1, credit: 2, investment: 3, cash: 4 }
+const typeOrder = {checking: 0, savings: 1, credit: 2, investment: 3, retirement: 4, cash: 5}
 
 const sortFns = {
   'bank-type': (a, b) => {

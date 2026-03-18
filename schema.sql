@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS profiles CASCADE;
 DROP TYPE IF EXISTS account_type;
 
 -- Enums
-CREATE TYPE account_type AS ENUM ('checking', 'savings', 'credit', 'investment', 'cash');
+CREATE TYPE account_type AS ENUM ('checking', 'savings', 'credit', 'investment', 'retirement', 'cash');
 
 -- Profiles (extends auth.users)
 CREATE TABLE profiles (
