@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'preact/hooks'
-import { supabase } from '../lib/supabase.js'
+import {useEffect, useState} from 'preact/hooks'
+import {supabase} from '../lib/supabase.js'
 
-export function TransferForm({ transfer, onSave, onCancel }) {
+export function TransferForm({transfer, onSave, onCancel}) {
   const [fromAccountId, setFromAccountId] = useState(transfer?.from_account_id || '')
   const [toAccountId, setToAccountId] = useState(transfer?.to_account_id || '')
   const [amount, setAmount] = useState(transfer?.amount ?? '')
@@ -12,7 +12,7 @@ export function TransferForm({ transfer, onSave, onCancel }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    supabase.from('accounts').select('id, name, is_closed').order('name').then(({ data }) => {
+    supabase.from('money_accounts').select('id, name, is_closed').order('name').then(({data}) => {
       const open = (data || []).filter(a => !a.is_closed)
       setAccounts(open)
       if (!fromAccountId && open.length >= 2) {
@@ -50,7 +50,7 @@ export function TransferForm({ transfer, onSave, onCancel }) {
         <div>
           <label class="text-xs text-gray-500 dark:text-gray-400">From</label>
           <select value={fromAccountId} onChange={e => setFromAccountId(e.target.value)}
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">Select...</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
@@ -58,7 +58,7 @@ export function TransferForm({ transfer, onSave, onCancel }) {
         <div>
           <label class="text-xs text-gray-500 dark:text-gray-400">To</label>
           <select value={toAccountId} onChange={e => setToAccountId(e.target.value)}
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">Select...</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
@@ -66,12 +66,12 @@ export function TransferForm({ transfer, onSave, onCancel }) {
       </div>
       <div class="grid grid-cols-2 gap-3">
         <input type="number" step="0.01" min="0" placeholder="Amount" value={amount} onInput={e => setAmount(e.target.value)}
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
         <input type="date" value={date} onInput={e => setDate(e.target.value)}
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
       </div>
       <input type="text" placeholder="Description (optional)" value={description} onInput={e => setDescription(e.target.value)}
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
       <div class="flex gap-2">
         <button type="submit" disabled={saving} class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg disabled:opacity-50">
           {saving ? 'Saving...' : 'Save'}

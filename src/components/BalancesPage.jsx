@@ -16,10 +16,10 @@ export function BalancesPage() {
 
   async function loadBalances() {
     setLoading(true)
-    const { data: accounts } = await supabase.from('accounts').select('*, bank:banks(name)')
-    const { data: txns } = await supabase.from('transactions').select('*')
-    const { data: transfers } = await supabase.from('transfers').select('*')
-    const { data: categories } = await supabase.from('categories').select('*')
+    const {data: accounts} = await supabase.from('money_accounts').select('*, bank:money_banks(name)')
+    const {data: txns} = await supabase.from('money_transactions').select('*')
+    const {data: transfers} = await supabase.from('money_transfers').select('*')
+    const {data: categories} = await supabase.from('money_categories').select('*')
 
     // Compute balance at range.to, working forward or backward from anchor
     const cutoff = range.to + 'Z' // make exclusive by comparing < day after
@@ -47,7 +47,7 @@ export function BalancesPage() {
           if (tr.date > range.to && tr.date < anchorDate) bal -= amt
         }
       }
-      return { ...acct, balance: bal }
+      return {...acct, balance: bal}
     })
 
     setAccountBalances(balances)
@@ -65,7 +65,7 @@ export function BalancesPage() {
       catMap[name] = (catMap[name] || 0) + Math.abs(Number(t.amount))
     }
     const sorted = Object.entries(catMap)
-      .map(([name, total]) => ({ name, total }))
+      .map(([name, total]) => ({name, total}))
       .sort((a, b) => b.total - a.total)
     setCategoryTotals(sorted)
     setLoading(false)
@@ -73,13 +73,13 @@ export function BalancesPage() {
 
   if (loading) return <p class="text-gray-500 dark:text-gray-400 py-8">Loading...</p>
 
-  const fmt = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+  const fmt = n => n.toLocaleString('en-US', {style: 'currency', currency: 'USD'})
 
   return (
     <div class="space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Balances</h1>
-        <DateRangeFilter from={range.from} to={range.to} onChange={setRange} />
+        <DateRangeFilter from={range.from} to={range.to} onChange={setRange}/>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
@@ -94,30 +94,30 @@ export function BalancesPage() {
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="w-full text-xs">
             <thead>
-              <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Account</th>
-                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Bank</th>
-                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Type</th>
-                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Balance</th>
-              </tr>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Account</th>
+              <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Bank</th>
+              <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Type</th>
+              <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Balance</th>
+            </tr>
             </thead>
             <tbody>
-              {accountBalances.map(a => (
-                <tr key={a.id} class="border-b border-gray-100 dark:border-gray-700 last:border-0">
-                  <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{a.name}</td>
-                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400">{a.bank?.name}</td>
-                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400">{a.account_type}</td>
-                  <td class={`px-3 py-1.5 text-right font-mono whitespace-nowrap ${a.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {fmt(a.balance)}
-                  </td>
-                </tr>
-              ))}
-              <tr class="bg-gray-50 dark:bg-gray-900 font-medium">
-                <td class="px-3 py-2 text-gray-900 dark:text-gray-100" colspan="3">Total</td>
-                <td class={`px-3 py-2 text-right font-mono whitespace-nowrap ${netWorth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {fmt(netWorth)}
+            {accountBalances.map(a => (
+              <tr key={a.id} class="border-b border-gray-100 dark:border-gray-700 last:border-0">
+                <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{a.name}</td>
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400">{a.bank?.name}</td>
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400">{a.account_type}</td>
+                <td class={`px-3 py-1.5 text-right font-mono whitespace-nowrap ${a.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {fmt(a.balance)}
                 </td>
               </tr>
+            ))}
+            <tr class="bg-gray-50 dark:bg-gray-900 font-medium">
+              <td class="px-3 py-2 text-gray-900 dark:text-gray-100" colspan="3">Total</td>
+              <td class={`px-3 py-2 text-right font-mono whitespace-nowrap ${netWorth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                {fmt(netWorth)}
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
@@ -129,26 +129,26 @@ export function BalancesPage() {
           <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="w-full text-xs">
               <thead>
-                <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                  <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Category</th>
-                  <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Amount</th>
-                </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Category</th>
+                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Amount</th>
+              </tr>
               </thead>
               <tbody>
-                {categoryTotals.map(c => (
-                  <tr key={c.name} class="border-b border-gray-100 dark:border-gray-700 last:border-0">
-                    <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{c.name}</td>
-                    <td class="px-3 py-1.5 text-right font-mono text-red-600 dark:text-red-400 whitespace-nowrap">
-                      {fmt(c.total)}
-                    </td>
-                  </tr>
-                ))}
-                <tr class="bg-gray-50 dark:bg-gray-900 font-medium">
-                  <td class="px-3 py-2 text-gray-900 dark:text-gray-100">Total</td>
-                  <td class="px-3 py-2 text-right font-mono text-red-600 dark:text-red-400 whitespace-nowrap">
-                    {fmt(categoryTotals.reduce((s, c) => s + c.total, 0))}
+              {categoryTotals.map(c => (
+                <tr key={c.name} class="border-b border-gray-100 dark:border-gray-700 last:border-0">
+                  <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{c.name}</td>
+                  <td class="px-3 py-1.5 text-right font-mono text-red-600 dark:text-red-400 whitespace-nowrap">
+                    {fmt(c.total)}
                   </td>
                 </tr>
+              ))}
+              <tr class="bg-gray-50 dark:bg-gray-900 font-medium">
+                <td class="px-3 py-2 text-gray-900 dark:text-gray-100">Total</td>
+                <td class="px-3 py-2 text-right font-mono text-red-600 dark:text-red-400 whitespace-nowrap">
+                  {fmt(categoryTotals.reduce((s, c) => s + c.total, 0))}
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>

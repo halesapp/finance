@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'preact/hooks'
 import {supabase} from '../lib/supabase.js'
 
-export function AccountForm({ account, onSave, onCancel }) {
+export function AccountForm({account, onSave, onCancel}) {
   const [name, setName] = useState(account?.name || '')
   const [bankId, setBankId] = useState(account?.bank_id || '')
   const [initialBalance, setInitialBalance] = useState(account?.initial_balance ?? '0')
@@ -12,7 +12,7 @@ export function AccountForm({ account, onSave, onCancel }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    supabase.from('banks').select('id, name').order('name').then(({ data }) => {
+    supabase.from('money_banks').select('id, name').order('name').then(({data}) => {
       setBanks(data || [])
       if (!bankId && data?.length) setBankId(data[0].id)
     })
@@ -44,25 +44,25 @@ export function AccountForm({ account, onSave, onCancel }) {
       <h3 class="font-medium text-gray-900 dark:text-gray-100">{account ? 'Edit Account' : 'New Account'}</h3>
       {error && <p class="text-red-600 text-sm">{error}</p>}
       <input type="text" placeholder="Account name" value={name} onInput={e => setName(e.target.value)}
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
       <select value={bankId} onChange={e => setBankId(e.target.value)}
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
         {banks.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
       </select>
       <select value={accountType} onChange={e => setAccountType(e.target.value)}
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
         {types.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
       </select>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="text-xs text-gray-500 dark:text-gray-400">Initial Balance</label>
           <input type="number" step="0.01" value={initialBalance} onInput={e => setInitialBalance(e.target.value)}
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
         </div>
         <div>
           <label class="text-xs text-gray-500 dark:text-gray-400">As of Date</label>
           <input type="date" value={initialBalanceDate} onInput={e => setInitialBalanceDate(e.target.value)}
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
         </div>
       </div>
       <div class="flex gap-2">

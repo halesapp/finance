@@ -5,7 +5,7 @@ import {ConfirmModal} from './ConfirmModal.jsx'
 import {DeleteIcon, EditIcon} from './icons.jsx'
 
 export function BankList() {
-  const { data: banks, loading, insert, update, remove } = useSupabase('banks', { orderBy: 'name' })
+  const {data: banks, loading, insert, update, remove} = useSupabase('money_banks', {orderBy: 'name'})
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
 
@@ -48,23 +48,23 @@ export function BankList() {
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="w-full text-xs">
             <thead>
-              <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Name</th>
-                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Created</th>
-                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-20"></th>
-              </tr>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Name</th>
+              <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Created</th>
+              <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-20"></th>
+            </tr>
             </thead>
             <tbody>
-              {banks.map(b => (
-                <tr key={b.id} class="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{b.name}</td>
-                  <td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{b.created_at?.slice(0, 10)}</td>
-                  <td class="px-3 py-1.5 text-right whitespace-nowrap">
-                    <button onClick={() => setEditing(b)} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit"><EditIcon/></button>
-                    <button onClick={() => setDeleting(b.id)} class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" title="Delete"><DeleteIcon/></button>
-                  </td>
-                </tr>
-              ))}
+            {banks.map(b => (
+              <tr key={b.id} class="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{b.name}</td>
+                <td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{b.created_at?.slice(0, 10)}</td>
+                <td class="px-3 py-1.5 text-right whitespace-nowrap">
+                  <button onClick={() => setEditing(b)} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit"><EditIcon/></button>
+                  <button onClick={() => setDeleting(b.id)} class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" title="Delete"><DeleteIcon/></button>
+                </td>
+              </tr>
+            ))}
             </tbody>
           </table>
         </div>

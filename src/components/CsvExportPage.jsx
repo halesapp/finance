@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'preact/hooks'
-import { supabase } from '../lib/supabase.js'
-import { exportTransactions, downloadCsv } from '../lib/csvExport.js'
-import { DateRangeFilter } from './DateRangeFilter.jsx'
-import { getRange } from '../lib/dateUtils.js'
+import {useEffect, useState} from 'preact/hooks'
+import {supabase} from '../lib/supabase.js'
+import {downloadCsv, exportTransactions} from '../lib/csvExport.js'
+import {DateRangeFilter} from './DateRangeFilter.jsx'
+import {getRange} from '../lib/dateUtils.js'
 
 export function CsvExportPage() {
   const [accounts, setAccounts] = useState([])
@@ -12,7 +12,7 @@ export function CsvExportPage() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    supabase.from('accounts').select('id, name, initial_balance').order('name').then(({ data }) => {
+    supabase.from('money_accounts').select('id, name, initial_balance').order('name').then(({data}) => {
       setAccounts(data || [])
     })
   }, [])
@@ -41,14 +41,14 @@ export function CsvExportPage() {
         <div>
           <label class="text-sm text-gray-500 dark:text-gray-400">Account</label>
           <select value={accountId} onChange={e => setAccountId(e.target.value)}
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="all">All accounts</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
-        <DateRangeFilter from={range.from} to={range.to} onChange={setRange} />
+        <DateRangeFilter from={range.from} to={range.to} onChange={setRange}/>
         <button onClick={handleExport} disabled={exporting}
-          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50">
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50">
           {exporting ? 'Exporting...' : 'Download CSV'}
         </button>
       </div>

@@ -22,11 +22,11 @@ const sortFns = {
 }
 
 export function AccountList() {
-  const { data: rawAccounts, loading: acctLoading, insert: insertAcct, update: updateAcct } = useSupabase('accounts', {
-    select: '*, bank:banks(name)',
+  const {data: rawAccounts, loading: acctLoading, insert: insertAcct, update: updateAcct} = useSupabase('money_accounts', {
+    select: '*, bank:money_banks(name)',
     orderBy: 'name',
   })
-  const { data: banks, loading: bankLoading, insert: insertBank, update: updateBank, remove: removeBank } = useSupabase('banks', { orderBy: 'name' })
+  const {data: banks, loading: bankLoading, insert: insertBank, update: updateBank, remove: removeBank} = useSupabase('money_banks', {orderBy: 'name'})
 
   const [editingAcct, setEditingAcct] = useState(null)
   const [editingBank, setEditingBank] = useState(null)
@@ -60,7 +60,7 @@ export function AccountList() {
   }
 
   async function handleToggleClosed(acct) {
-    await updateAcct(acct.id, { is_closed: !acct.is_closed })
+    await updateAcct(acct.id, {is_closed: !acct.is_closed})
   }
 
   function cycleSortKey(column) {
@@ -90,7 +90,7 @@ export function AccountList() {
 
   const thSort = 'cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400'
   const thBase = 'text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400'
-  const fmt = n => Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+  const fmt = n => Number(n).toLocaleString('en-US', {style: 'currency', currency: 'USD'})
 
   return (
     <div class="space-y-3">
@@ -114,21 +114,21 @@ export function AccountList() {
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="w-full text-xs">
             <thead>
-              <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <th class={thBase}>Name</th>
-                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-20"></th>
-              </tr>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <th class={thBase}>Name</th>
+              <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-20"></th>
+            </tr>
             </thead>
             <tbody>
-              {banks.map(b => (
-                <tr key={b.id} class="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{b.name}</td>
-                  <td class="px-3 py-1.5 text-right whitespace-nowrap">
-                    <button onClick={() => setEditingBank(b)} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit"><EditIcon/></button>
-                    <button onClick={() => setDeletingBank(b.id)} class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" title="Delete"><DeleteIcon/></button>
-                  </td>
-                </tr>
-              ))}
+            {banks.map(b => (
+              <tr key={b.id} class="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">{b.name}</td>
+                <td class="px-3 py-1.5 text-right whitespace-nowrap">
+                  <button onClick={() => setEditingBank(b)} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit"><EditIcon/></button>
+                  <button onClick={() => setDeletingBank(b.id)} class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" title="Delete"><DeleteIcon/></button>
+                </td>
+              </tr>
+            ))}
             </tbody>
           </table>
         </div>
@@ -140,7 +140,7 @@ export function AccountList() {
         <div class="flex gap-2">
           {closedAccounts.length > 0 && (
             <button onClick={() => setShowClosed(!showClosed)}
-              class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
               {showClosed ? `Open (${openAccounts.length})` : `Closed (${closedAccounts.length})`}
             </button>
           )}
@@ -168,46 +168,46 @@ export function AccountList() {
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="w-full text-xs">
             <thead>
-              <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <th class={`${thBase} ${thSort}`} onClick={() => cycleSortKey('name')}>
-                  Name{sortIndicator('name') && <span class="text-blue-500 text-[10px] ml-0.5">{sortIndicator('name')}</span>}
-                </th>
-                <th class={`${thBase} ${thSort}`} onClick={() => cycleSortKey('bank')}>
-                  Bank<span class="text-blue-500 text-[10px] ml-0.5">{sortIndicator('bank')}</span>
-                </th>
-                <th class={`${thBase} ${thSort}`} onClick={() => cycleSortKey('type')}>
-                  Type<span class="text-blue-500 text-[10px] ml-0.5">{sortIndicator('type')}</span>
-                </th>
-                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Initial Balance</th>
-                <th class={thBase}>As of</th>
-                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-28"></th>
-              </tr>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <th class={`${thBase} ${thSort}`} onClick={() => cycleSortKey('name')}>
+                Name{sortIndicator('name') && <span class="text-blue-500 text-[10px] ml-0.5">{sortIndicator('name')}</span>}
+              </th>
+              <th class={`${thBase} ${thSort}`} onClick={() => cycleSortKey('bank')}>
+                Bank<span class="text-blue-500 text-[10px] ml-0.5">{sortIndicator('bank')}</span>
+              </th>
+              <th class={`${thBase} ${thSort}`} onClick={() => cycleSortKey('type')}>
+                Type<span class="text-blue-500 text-[10px] ml-0.5">{sortIndicator('type')}</span>
+              </th>
+              <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Initial Balance</th>
+              <th class={thBase}>As of</th>
+              <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-28"></th>
+            </tr>
             </thead>
             <tbody>
-              {displayed.map(a => (
-                <tr key={a.id} class={`border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${a.is_closed ? 'opacity-50' : ''}`}>
-                  <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">
-                    {a.name}
-                    {a.is_closed && <span class="ml-1 text-gray-400">(closed)</span>}
-                  </td>
-                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{a.bank?.name}</td>
-                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{a.account_type}</td>
-                  <td class={`px-3 py-1.5 text-right font-mono whitespace-nowrap ${Number(a.initial_balance) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {fmt(a.initial_balance)}
-                  </td>
-                  <td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.initial_balance_date}</td>
-                  <td class="px-3 py-1.5 text-right whitespace-nowrap">
-                    <button onClick={() => setEditingAcct(a)}
-                      class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit">
-                      <EditIcon/>
-                    </button>
-                    <button onClick={() => handleToggleClosed(a)}
-                      class={`hover:underline mr-2 ${a.is_closed ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
-                      {a.is_closed ? 'reopen' : 'close'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+            {displayed.map(a => (
+              <tr key={a.id} class={`border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${a.is_closed ? 'opacity-50' : ''}`}>
+                <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100">
+                  {a.name}
+                  {a.is_closed && <span class="ml-1 text-gray-400">(closed)</span>}
+                </td>
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{a.bank?.name}</td>
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{a.account_type}</td>
+                <td class={`px-3 py-1.5 text-right font-mono whitespace-nowrap ${Number(a.initial_balance) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {fmt(a.initial_balance)}
+                </td>
+                <td class="px-3 py-1.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">{a.initial_balance_date}</td>
+                <td class="px-3 py-1.5 text-right whitespace-nowrap">
+                  <button onClick={() => setEditingAcct(a)}
+                          class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit">
+                    <EditIcon/>
+                  </button>
+                  <button onClick={() => handleToggleClosed(a)}
+                          class={`hover:underline mr-2 ${a.is_closed ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+                    {a.is_closed ? 'reopen' : 'close'}
+                  </button>
+                </td>
+              </tr>
+            ))}
             </tbody>
           </table>
         </div>

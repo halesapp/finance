@@ -12,10 +12,10 @@ export function RetirementPage() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from('accounts').select('id, name, account_type').order('name'),
-      supabase.from('transactions').select('id, account_id, amount, date, category_id'),
-      supabase.from('transfers').select('id, from_account_id, to_account_id, amount, date'),
-      supabase.from('categories').select('id, name, parent_category_id'),
+      supabase.from('money_accounts').select('id, name, account_type').order('name'),
+      supabase.from('money_transactions').select('id, account_id, amount, date, category_id'),
+      supabase.from('money_transfers').select('id, from_account_id, to_account_id, amount, date'),
+      supabase.from('money_categories').select('id, name, parent_category_id'),
     ]).then(([{data: a}, {data: t}, {data: tr}, {data: c}]) => {
       setAccounts(a || [])
       setTxns(t || [])

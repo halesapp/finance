@@ -19,15 +19,15 @@ export function TransactionForm({transaction, onSave, onCancel}) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    supabase.from('accounts').select('id, name, is_closed').order('name').then(({data}) => {
+    supabase.from('money_accounts').select('id, name, is_closed').order('name').then(({data}) => {
       const open = (data || []).filter(a => !a.is_closed)
       setAccounts(open)
       if (!accountId && open.length) setAccountId(open[0].id)
     })
-    supabase.from('categories').select('id, name, parent_category_id').order('name').then(({data}) => {
+    supabase.from('money_categories').select('id, name, parent_category_id').order('name').then(({data}) => {
       setCategories(data || [])
     })
-    supabase.from('payees').select('id, name').order('name').then(({data}) => {
+    supabase.from('money_payees').select('id, name').order('name').then(({data}) => {
       setPayees(data || [])
     })
   }, [])

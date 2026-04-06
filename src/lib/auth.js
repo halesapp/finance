@@ -1,12 +1,12 @@
-import { supabase } from './supabase.js'
-import { session, profile } from './state.js'
+import {supabase} from './supabase.js'
+import {profile, session} from './state.js'
 
 const IDLE_TIMEOUT = 5 * 60 * 1000 // 5 minutes
 let idleTimer = null
 
 export async function fetchProfile(userId) {
   const { data } = await supabase
-    .from('profiles')
+    .from('money_profiles')
     .select('*')
     .eq('id', userId)
     .single()

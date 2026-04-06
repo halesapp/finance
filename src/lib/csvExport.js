@@ -1,23 +1,23 @@
-import { supabase } from './supabase.js'
+import {supabase} from './supabase.js'
 
 export async function exportTransactions(accountId, from, to) {
   let txnsQuery = supabase
-    .from('transactions')
-    .select('date, description, category:categories(name), amount, account:accounts(name), payee:payees(name)')
+    .from('money_transactions')
+    .select('date, description, category:money_categories(name), amount, account:money_accounts(name), payee:money_payees(name)')
     .gte('date', from)
     .lte('date', to)
     .order('date')
 
   let transfersInQuery = supabase
-    .from('transfers')
-    .select('date, description, amount, account:accounts!transfers_to_account_id_fkey(name)')
+    .from('money_transfers')
+    .select('date, description, amount, account:money_accounts!money_transfers_to_account_id_fkey(name)')
     .gte('date', from)
     .lte('date', to)
     .order('date')
 
   let transfersOutQuery = supabase
-    .from('transfers')
-    .select('date, description, amount, account:accounts!transfers_from_account_id_fkey(name)')
+    .from('money_transfers')
+    .select('date, description, amount, account:money_accounts!money_transfers_from_account_id_fkey(name)')
     .gte('date', from)
     .lte('date', to)
     .order('date')

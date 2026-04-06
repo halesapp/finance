@@ -5,7 +5,7 @@ import {ConfirmModal} from './ConfirmModal.jsx'
 import {DeleteIcon, EditIcon, TransferIcon} from './icons.jsx'
 
 const PAGE_SIZE = 50
-const fmt = n => Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+const fmt = n => Number(n).toLocaleString('en-US', {style: 'currency', currency: 'USD'})
 
 export function TransactionList() {
   const [txns, setTxns] = useState([])
@@ -19,28 +19,30 @@ export function TransactionList() {
 
   const fetchTxns = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('transactions')
-      .select('*, account:accounts(name), category:categories(name), payee:payees(name)')
-      .order('date', { ascending: false })
+    const {data} = await supabase
+      .from('money_transactions')
+      .select('*, account:money_accounts(name), category:money_categories(name), payee:money_payees(name)')
+      .order('date', {ascending: false})
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
     setTxns(data || [])
     setHasMore((data || []).length === PAGE_SIZE)
     setLoading(false)
   }, [page])
 
-  useEffect(() => { fetchTxns() }, [fetchTxns])
+  useEffect(() => {
+    fetchTxns()
+  }, [fetchTxns])
 
   useEffect(() => {
-    supabase.from('accounts').select('id, name').order('name').then(({data}) => setAccounts(data || []))
+    supabase.from('money_accounts').select('id, name').order('name').then(({data}) => setAccounts(data || []))
   }, [])
 
   async function handleSave(txn) {
     if (editing === 'new') {
-      const { error } = await supabase.from('transactions').insert(txn)
+      const {error} = await supabase.from('money_transactions').insert(txn)
       if (error) throw error
     } else {
-      const { error } = await supabase.from('transactions').update(txn).eq('id', editing.id)
+      const {error} = await supabase.from('money_transactions').update(txn).eq('id', editing.id)
       if (error) throw error
     }
     setEditing(null)
@@ -48,7 +50,7 @@ export function TransactionList() {
   }
 
   async function handleDelete() {
-    await supabase.from('transactions').delete().eq('id', deleting)
+    await supabase.from('money_transactions').delete().eq('id', deleting)
     setDeleting(null)
     fetchTxns()
   }
@@ -64,9 +66,9 @@ export function TransactionList() {
       amount: amt,
       description: txn.description || null,
     }
-    const {error: insertErr} = await supabase.from('transfers').insert(transfer)
+    const {error: insertErr} = await supabase.from('money_transfers').insert(transfer)
     if (insertErr) throw insertErr
-    await supabase.from('transactions').delete().eq('id', txn.id)
+    await supabase.from('money_transactions').delete().eq('id', txn.id)
     setConverting(null)
     fetchTxns()
   }
@@ -101,7 +103,7 @@ export function TransactionList() {
         <div class="text-center py-12">
           <p class="text-gray-500 dark:text-gray-400 text-sm">No transactions yet.</p>
           <button onClick={() => setEditing('new')}
-            class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                  class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
             Add your first transaction
           </button>
         </div>
@@ -110,47 +112,49 @@ export function TransactionList() {
           <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="w-full text-xs">
               <thead>
-                <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                  <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Date</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Payee</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Description</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Account</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Category</th>
-                  <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Amount</th>
-                  <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-16"></th>
-                </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Date</th>
+                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Payee</th>
+                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Description</th>
+                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Account</th>
+                <th class="text-left px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Category</th>
+                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400">Amount</th>
+                <th class="text-right px-3 py-2 font-medium text-gray-500 dark:text-gray-400 w-16"></th>
+              </tr>
               </thead>
               <tbody>
-                {txns.map(t => (
-                  <tr key={t.id} class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 last:border-0">
-                    <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.date}</td>
-                    <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.payee?.name || '—'}</td>
-                    <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100 max-w-xs truncate">{t.description || '—'}</td>
-                    <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.account?.name}</td>
-                    <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.category?.name || '—'}</td>
-                    <td class={`px-3 py-1.5 text-right font-mono whitespace-nowrap ${
-                      Number(t.amount) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
-                    }`}>
-                      {fmt(t.amount)}
-                    </td>
-                    <td class="px-3 py-1.5 text-right whitespace-nowrap">
-                      <button onClick={() => setConverting(t)} class="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 mr-2" title="Convert to transfer">
-                        <TransferIcon/>
-                      </button>
-                      <button onClick={() => setEditing(t)} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit"><EditIcon/></button>
-                      <button onClick={() => setDeleting(t.id)} class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" title="Delete"><DeleteIcon/></button>
-                    </td>
-                  </tr>
-                ))}
+              {txns.map(t => (
+                <tr key={t.id} class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 last:border-0">
+                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.date}</td>
+                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.payee?.name || '—'}</td>
+                  <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100 max-w-xs truncate">{t.description || '—'}</td>
+                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.account?.name}</td>
+                  <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.category?.name || '—'}</td>
+                  <td class={`px-3 py-1.5 text-right font-mono whitespace-nowrap ${
+                    Number(t.amount) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                  }`}>
+                    {fmt(t.amount)}
+                  </td>
+                  <td class="px-3 py-1.5 text-right whitespace-nowrap">
+                    <button onClick={() => setConverting(t)} class="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 mr-2" title="Convert to transfer">
+                      <TransferIcon/>
+                    </button>
+                    <button onClick={() => setEditing(t)} class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2" title="Edit"><EditIcon/></button>
+                    <button onClick={() => setDeleting(t.id)} class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" title="Delete"><DeleteIcon/></button>
+                  </td>
+                </tr>
+              ))}
               </tbody>
             </table>
           </div>
           <div class="flex justify-between">
             <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-              class="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 text-gray-700 dark:text-gray-300">Prev</button>
+                    class="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 text-gray-700 dark:text-gray-300">Prev
+            </button>
             <span class="text-xs text-gray-500 dark:text-gray-400 self-center">Page {page + 1}</span>
             <button onClick={() => setPage(p => p + 1)} disabled={!hasMore}
-              class="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 text-gray-700 dark:text-gray-300">Next</button>
+                    class="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 text-gray-700 dark:text-gray-300">Next
+            </button>
           </div>
         </>
       )}

@@ -20,13 +20,14 @@ export function ReportsPage() {
   const [dateFrom, setDateFrom] = useState('2025-01-01')
   const [dateTo, setDateTo] = useState(new Date().toISOString().slice(0, 10))
   const [groupBy, setGroupBy] = useState('month') // month | payee | category
+  const [txnSort, setTxnSort] = useState({col: 'date', asc: false})
 
   useEffect(() => {
     Promise.all([
-      supabase.from('transactions').select('*, account:accounts(name), payee:payees(name), category:categories(id, name, parent_category_id)').order('date'),
-      supabase.from('accounts').select('id, name, is_closed, account_type').order('name'),
-      supabase.from('payees').select('id, name').order('name'),
-      supabase.from('categories').select('id, name, parent_category_id').order('name'),
+      supabase.from('money_transactions').select('*, account:money_accounts(name), payee:money_payees(name), category:money_categories(id, name, parent_category_id)').order('date'),
+      supabase.from('money_accounts').select('id, name, is_closed, account_type').order('name'),
+      supabase.from('money_payees').select('id, name').order('name'),
+      supabase.from('money_categories').select('id, name, parent_category_id').order('name'),
     ]).then(([{data: t}, {data: a}, {data: p}, {data: c}]) => {
       setTxns(t || [])
       setAccounts(a || [])
@@ -140,6 +141,38 @@ export function ReportsPage() {
 
   const colorClass = n => Number(n) < 0 ? 'text-red-600 dark:text-red-400' : Number(n) > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'
 
+  const sortedFiltered = useMemo(() => {
+    const rows = [...filtered]
+    const {col, asc} = txnSort
+    const dir = asc ? 1 : -1
+    rows.sort((a, b) => {
+      let av, bv
+      if (col === 'date') {
+        av = a.date;
+        bv = b.date
+      } else if (col === 'amount') {
+        av = Number(a.amount);
+        bv = Number(b.amount)
+      } else if (col === 'payee') {
+        av = a.payee?.name || '';
+        bv = b.payee?.name || ''
+      } else if (col === 'description') {
+        av = a.description || '';
+        bv = b.description || ''
+      } else if (col === 'account') {
+        av = a.account?.name || '';
+        bv = b.account?.name || ''
+      } else if (col === 'category') {
+        av = a.category?.name || '';
+        bv = b.category?.name || ''
+      }
+      if (av < bv) return -dir
+      if (av > bv) return dir
+      return 0
+    })
+    return rows
+  }, [filtered, txnSort])
+
   return (
     <div class="space-y-5">
       <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Reports</h1>
@@ -242,6 +275,47 @@ export function ReportsPage() {
               <td class="px-3 py-2 text-right font-mono text-red-600 dark:text-red-400 whitespace-nowrap">{fmt(totals.expense)}</td>
               <td class={`px-3 py-2 text-right font-mono whitespace-nowrap ${colorClass(totals.net)}`}>{fmt(totals.net)}</td>
             </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Transactions detail */}
+      <div>
+        <h2 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+          Transactions ({filtered.length})
+        </h2>
+        <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <table class="w-full text-xs">
+            <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              {[
+                {col: 'date', label: 'Date'},
+                {col: 'payee', label: 'Payee'},
+                {col: 'description', label: 'Description'},
+                {col: 'account', label: 'Account'},
+                {col: 'category', label: 'Category'},
+                {col: 'amount', label: 'Amount', right: true},
+              ].map(h => (
+                <th key={h.col}
+                    onClick={() => setTxnSort(s => ({col: h.col, asc: s.col === h.col ? !s.asc : h.col === 'amount' ? false : true}))}
+                    class={`${h.right ? 'text-right' : 'text-left'} px-3 py-2 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none`}>
+                  {h.label}{txnSort.col === h.col ? (txnSort.asc ? ' \u25B2' : ' \u25BC') : ''}
+                </th>
+              ))}
+            </tr>
+            </thead>
+            <tbody>
+            {sortedFiltered.map(t => (
+              <tr key={t.id} class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 last:border-0">
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.date}</td>
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.payee?.name || '\u2014'}</td>
+                <td class="px-3 py-1.5 text-gray-900 dark:text-gray-100 max-w-xs truncate">{t.description || '\u2014'}</td>
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.account?.name}</td>
+                <td class="px-3 py-1.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">{t.category?.name || '\u2014'}</td>
+                <td class={`px-3 py-1.5 text-right font-mono whitespace-nowrap ${colorClass(t.amount)}`}>{fmt(t.amount)}</td>
+              </tr>
+            ))}
             </tbody>
           </table>
         </div>
